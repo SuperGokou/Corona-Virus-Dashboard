@@ -1,55 +1,33 @@
-let myDataTable,
-    myMapVis,
-    myBarVisOne,
-    myBarVisTwo,
-    myBrushVis;
-
+/* Global State */
+let myDataTable, myMapVis, myBarVisOne, myBarVisTwo, myBrushVis;
 let selectedTimeRange = [];
 let selectedState = '';
+let selectedCategory = document.getElementById('categorySelector').value;
 
-let selectedCategory =  document.getElementById('categorySelector').value;
-
-// load data using promises
-let promises = [
-
-    // d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json"),  // not projected -> you need to do it
-    d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-albers-10m.json"), // already projected -> you can just scale it to fit your browser window
+/* Load Data */
+Promise.all([
+    d3.json("data/states-albers-10m.json"),
     d3.csv("data/covid_data_20.csv"),
     d3.csv("data/census_usa.csv")
-];
+])
+.then(initMainPage)
+.catch(err => {
+    document.body.innerHTML = '<div class="alert alert-danger m-5">Failed to load data. Please run this page from a local server.</div>';
+});
 
-Promise.all(promises)
-    .then(function (data) {
-        initMainPage(data)
-    })
-    .catch(function (err) {
-        console.log(err)
-    });
-
-// initMainPage
 function initMainPage(dataArray) {
+    const [geoData, covidData, censusData] = dataArray;
 
-    // log data
-    console.log('check out the data', dataArray);
-
-    // init table
-    myDataTable = new DataTable('tableDiv', dataArray[1], dataArray[2]);
-
-    // init brush
-    myBrushVis = new BrushVis('brushDiv', dataArray[1]);
-
-    // TODO - init map
-    myMapVis = new MapVis('mapDiv', dataArray[0], dataArray[1], dataArray[2]);
-
-    // // TODO - init bars
-    myBarVisOne = new BarVis('barDiv',dataArray[1], dataArray[2], true, "Highest 10 States");
-    myBarVisTwo = new BarVis('barTwoDiv',dataArray[1], dataArray[2], false, "Lowest 10 States");
-
+    myDataTable = new DataTable('tableDiv', covidData, censusData);
+    myBrushVis = new BrushVis('brushDiv', covidData);
+    myMapVis = new MapVis('mapDiv', geoData, covidData, censusData);
+    myBarVisOne = new BarVis('barDiv', covidData, censusData, true, "Top 10 States");
+    myBarVisTwo = new BarVis('barTwoDiv', covidData, censusData, false, "Bottom 10 States");
 }
 
 function categoryChange() {
-    selectedCategory =  document.getElementById('categorySelector').value;
-    myMapVis.wrangleData(selectedCategory); // maybe you need to change this slightly depending on the name of your MapVis instance
+    selectedCategory = document.getElementById('categorySelector').value;
+    myMapVis.wrangleData(selectedCategory);
     myBarVisOne.wrangleData(selectedCategory);
-    myBarVisTwo.wrangleData(selectedCategory)
+    myBarVisTwo.wrangleData(selectedCategory);
 }
