@@ -2,6 +2,7 @@
 
 An interactive web dashboard for visualizing COVID-19 data across all 50 US states. Users can explore cases and deaths in both absolute numbers and relative to population through multiple coordinated visualizations.
 
+**Demo**: https://supergokou.github.io/Corona-Virus-Dashboard/
 ## Features
 
 | Component | Description |
